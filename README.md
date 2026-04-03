@@ -335,7 +335,7 @@ Throughout this process, your check() loop receives tag records:
   → ... repeating every ~50-100ms
 ```
 
-Your application code deduplicates these into a set of 3 unique EPCs, matches them against known puck EPCs, and lights the corresponding LEDs. The entire process — from `startReading()` to having all 3 pucks identified — typically takes well under 200ms.
+Currently the application code deduplicates these into a set of 3 unique EPCs, matches them against known puck EPCs, and lights the corresponding LEDs. The entire process — from `startReading()` to having all 3 pucks identified — typically takes well under 200ms.
 
 ---
 
