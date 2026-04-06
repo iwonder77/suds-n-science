@@ -27,6 +27,7 @@
  */
 
 #include "src/SparkFun_UHF_RFID_Reader.h"
+#include "src/EthernetController.h"
 #include "src/Config.h"
 
 // ─── Puck Combination → UDP Command Table ────────────────────────────────────
@@ -76,9 +77,11 @@ struct DetectedTag {
 DetectedTag tagInventory[config::MAX_TAGS];
 int tagCount = 0;
 
-// ─── Module Handle + Button State ────────────────────────────────────────────
+// ─── Hardware Objects ────────────────────────────────────────────
 RFID rfidModule;
+EthernetController ethernetController;
 
+// ─── Button State ────────────────────────────────────────────
 volatile bool pressed = false;
 volatile unsigned long lastPressTime = 0;
 
@@ -305,7 +308,7 @@ void performScan() {
     Serial.print(F("] → Sending: \""));
     Serial.print(matchedCommand);
     Serial.println('"');
-    sendUdpCommand(matchedCommand);  // defined in udp.ino
+    ethernetController.sendUdpCommand(matchedCommand);  // defined in udp.ino
   } else if (detectedMask != 0) {
     Serial.print(F("\nNo combo match for mask 0x"));
     if (detectedMask < 0x10) Serial.print('0');
@@ -313,8 +316,6 @@ void performScan() {
   }
 
   // ── Light LEDs for all detected pucks ────────────────────────────────────
-  // LEDs fire regardless of combo match, giving the visitor immediate feedback
-  // on which pucks were actually read.
   if (pucksFound > 0) {
     Serial.print(F("\nLEDs ON: "));
     for (int i = 0; i < config::NUM_PUCKS; i++) {
@@ -338,7 +339,6 @@ void performScan() {
 }
 
 // ─── Tag Helpers ─────────────────────────────────────────────────────────────
-
 // Returns inventory index of a tag matching the given EPC, or -1 if not found.
 int findTagByEPC(byte *epc, uint8_t epcLen) {
   for (int i = 0; i < tagCount; i++) {
@@ -357,7 +357,6 @@ int matchPuck(byte *epc, uint8_t epcLen) {
 }
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
-
 void printEPC(byte *epc, uint8_t len) {
   for (uint8_t i = 0; i < len; i++) {
     if (epc[i] < 0x10) Serial.print('0');
@@ -401,8 +400,7 @@ void setup() {
 
   configureGen2Parameters();
 
-  // initEthernet() and all ethernet state live in udp.ino
-  initEthernet();
+  ethernetController.init();
 
   // Brief LED self-test — confirms all four outputs are wired correctly
   Serial.println(F("\nLED test..."));
@@ -416,13 +414,11 @@ void setup() {
 }
 
 void loop() {
-  updateLinkStatus();  // detect cable connect/disconnect events (defined in udp.ino)
+  ethernetController.updateLinkStatus();  // detect cable connect/disconnect events (defined in udp.ino)
 
   if (pressed) {
     Serial.println(F("\nButton pressed!"));
     pressed = false;
     performScan();
   }
-
-  maintainEthernet();  // DHCP renewal housekeeping (defined in udp.ino)
 }
