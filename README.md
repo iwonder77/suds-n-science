@@ -6,8 +6,6 @@ This is the main firmware for the the **Suds n Science** interactive exhibit at 
 
 When pucks are lost, damaged, or need replacement, use [this]() sketch to write the correct molecule identification data onto fresh UHF tags. The sketch provides a serial monitor menu for selecting a molecule type, writing the EPC payload, and verifying the result.
 
----
-
 ## Hardware
 
 ### Components
@@ -39,8 +37,6 @@ UART pins are defined in `src/Config.h` and can be changed if your board layout 
 constexpr uint8_t RXD1 = 18;  // ESP32 RX <- M7E TXO
 constexpr uint8_t TXD1 = 17;  // ESP32 TX -> M7E RXI
 ```
-
----
 
 ## Software Architecture
 
@@ -76,8 +72,6 @@ The `src/` directory contains a customized version of [paulvha's fork](https://g
 - `setPowerMode()` — M7E sleep mode support (also done by paulvha)
 - Temperature statistics in continuous mode (done by paulvha)
 - Optimized `stopReading()` drain logic by replacing per-byte `delay(100)` with bulk drain + settle (done by me)
-
----
 
 ## References
 
